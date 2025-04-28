@@ -1,0 +1,185 @@
+---
+title: "CS7DS3 Assignment 2"
+name: "Kaaviya Paranji Ramkumar"
+date: "20-04-2025"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
+  - \fancyfoot[R]{Kaaviya Paranji Ramkumar | 24358906}
+---
+
+### Answer 1
+The exponential distribution with rate parameter $θ$ has the following probability density function:
+
+$$p(t|θ) = θ exp(-θt)$$
+
+To understand how this relates to the standard exponential family form $p(t|θ) = h(t)g(θ)exp{φ(θ)s(t)}$, I'll rewrite the exponential PDF step by step.
+
+Starting with:
+$$p(t|θ) = θ exp(-θt)$$
+
+I can rearrange this as:
+$$p(t|θ) = θ × exp(-θt)$$
+
+Looking at the structure of the exponential family, I can identify which parts correspond to each component. In the exponential distribution:
+
+- The term in the exponent $(-θt)$ can be viewed as a product of a function of $θ$ and a function of $t$
+- The coefficient outside the exponent $(θ)$ depends only on the parameter
+
+Therefore:
+
+1. $s(t) = t$ -> this is the sufficient statistic, just the variable $t$ itself
+  
+2. $φ(θ) = -θ$ -> this is the natural parameter, a simple negative transformation of $θ$
+  
+3. $g(θ) = θ$ -> this is the auxiliary function
+  
+4. $h(t) = 1$ -> this is the normalizing constant, which in this case equals 1
+
+So, now we can rearrange the terms like this:
+
+$$h(t)g(θ)exp{φ(θ)s(t)} = 1 × θ × exp{-θ × t} = θ exp(-θt)$$
+
+This matches the original exponential distribution PDF, confirming our substitution is correct.
+
+The exponential distribution is particularly matching in the exponential family framework because of its simplicity - the sufficient statistic is just the value itself, and the natural parameter has a straightforward relationship with the rate parameter.
+
+### Answer 2
+
+#### Part 1
+
+Is the log-linear model for $θ$ surprising? So far, we have:
+
+$$θ = exp(-β₀-β₁x₁-β₂x₂)$$
+
+To evaluate whether this is a reasonable or surprising choice, I need to consider:
+
+1. Since $θ$ is a rate parameter for the exponential distribution, it must be positive $(θ > 0)$.
+2. The linear part $(-β₀-β₁x₁-β₂x₂)$ can take any real value from $-∞$ to $+∞$, depending on the values of the coefficients and covariates.
+3. The exponential function $exp(x)$ maps any real number to a positive number, which ensures $θ$ will always be positive.
+
+From a mathematical perspective, using $exp()$ ensures the rate parameter stays positive, which is a fundamental requirement. In my opinion, this is actually a standard approach in statistical modeling when dealing with parameters that must be positive.
+
+#### Part 2
+
+For an exponential distribution with rate parameter $θ$, we already know from Question 1:
+
+$$E[T] = 1/θ$$
+
+Substituting our log-linear model with $θ$:
+
+$$E[T] = 1/exp(-β₀-β₁x₁-β₂x₂)$$
+
+We can use the property that $1/exp(x) = exp(-x)$:
+
+$$E[T] = exp(-(-β₀-β₁x₁-β₂x₂))$$
+
+$$E[T] = exp(β₀+β₁x₁+β₂x₂)$$
+
+Hence, proved! The expected time to failure is directly modeled as $exp(β₀+β₁x₁+β₂x₂)$.
+This is why the negative sign in the model for $θ$ makes perfect sense. It allows us to interpret the coefficients in a natural way:
+
+- Positive $β₁$ means increasing $x₁$ increases the expected time to failure (improves reliability)
+- Negative $β₁$ means increasing $x₁$ decreases the expected time to failure (reduces reliability)
+
+### Answer 3
+
+#### Part 1
+
+To assess whether the MCMC performance was satisfactory, let's examine the diagnostic statistics provided in the output. From looking at the summary output, there are three key diagnostic measures to consider:
+
+1. For all parameters (Intercept, typeB, grade), the $Rhat = 1.00$
+
+   This value is perfect as $Rhat$ measures convergence between multiple chains. Values close to 1.0 show that the chains have converged to the same distribution. When $Rhat$ is exactly 1.00 for all parameters, this suggests very good convergence of the MCMC algorithm.
+
+2. For $BulkESS$ (aka the effective sample size), the values range from 3728 to 4255. These values are high enough to have an effective number of independent samples for estimating the bulk of the posterior distribution. The values are well above the recommended minimum of 1000, indicating that we have effectively obtained thousands of independent samples.
+
+3. For $TailESS$, the values range from 2637 to 3197. These are also high values. $TailESS$ measures the effective sample size for estimating the tails of the distribution (important for credible intervals). Again, these values are well above 1000, indicating good estimation of the credible intervals.
+
+I can sufficiently conclude that the MCMC performance is very satisfactory because of following factors:
+
+- Perfect convergence indicators ($Rhat$ = 1.00)
+- High effective sample sizes for both bulk and tail estimates
+- Consistent quality across all parameters
+
+The model has been run with 4 chains, each with 2000 iterations (including 1000 warmup), resulting in 4000 post-warmup draws. The diagnostics suggest these samples are of high quality and provide reliable posterior estimates for making inferences about the parameters.
+
+#### Part 2
+
+In our log-linear model for the exponential distribution, the intercept parameter $β₀$ has an estimate of 0.96 with a 95% credible interval of [0.49, 1.46].
+
+To interpret this intercept properly, let's rewrite how the current model is structured:
+
+- We're modeling the expected time to failure as $E[T] = exp(β₀ + β₁x₁ + β₂x₂)$
+- In this study, $x₁$ represents component type (with $x₁$ = 1 for type B, 0 for type A)
+- $x₂$ represents the grade of material (ranging from 1 to 5, with 1 being highest quality)
+
+The intercept $β₀$ represents the log of the expected failure time when all covariates equal zero. However, in this dataset, material grade ranges from 1 to 5, not starting at zero.
+
+Therefore, the intercept coefficient (0.96) represents strictly the log of the expected time to failure for:
+
+- A Type A component (since $x₁$= 0)
+- With theoretical grade = 0 material
+
+Since grade actually starts at 1, we need to adjust our interpretation. For a Type A component with the highest quality material (grade = 1), the expected time to failure would be:
+
+$$E[T] = exp(0.96 - 0.13 × 1) = exp(0.83) ≈ 2.29\text{ time units}$$
+
+This represents our baseline component - Type A with the highest quality material. All other component configurations would be compared against this baseline through the effects of their respective coefficients.
+
+The interval [0.49, 1.46] for the intercept tells us that we're 95% confident that the true log expected lifetime for this theoretical baseline case is between 0.49 and 1.46, which corresponds to an expected lifetime between $exp(0.49) ≈ 1.63$ and $exp(1.46) ≈ 4.31\text{ time units}$.
+
+#### Part 3
+
+To determine if there's evidence that Type A and Type B components are different, and which type is better, let's examine the coefficient for typeB in the model output.
+
+Looking at the results:
+
+- The coefficient for typeB is -0.50
+- The 95% credible interval is [-0.88, -0.11]
+- The standard error is 0.20
+
+There are two key points to consider here:
+
+**1. Is there really an evidence of a difference?**  
+Yes, there is strong evidence that Type A and Type B components differ in their time to failure. The 95% credible interval for the typeB coefficient does not include zero (it ranges from -0.88 to -0.11) while typeA coefficient does include zero (it ranges from -0.27 to 0.01). This means we can be quite confident that there is a real difference between the component types.
+
+**2. Which type of component is better?**  
+Since we're modeling the expected time to failure, a longer time indicates better reliability. The negative coefficient (-0.50) for typeB indicates that Type B components have a shorter expected lifetime compared to Type A components.
+
+We can quantify this difference as following:
+
+- The expected lifetime is multiplied by $exp(-0.50) ≈ 0.61$ when changing from Type A to Type B
+- This means Type B components have approximately 61% of the expected lifetime of Type A components, or a 39% reduction in expected lifetime
+
+For example, if a Type A component has an expected lifetime of 10 time units, a comparable Type B component would have an expected lifetime of approximately 6.1 time units.
+
+The credible interval [-0.88, -0.11] translates to Type B having between $exp(-0.88) ≈ 41% \text{ and } exp(-0.11) ≈ 90%$ of the expected lifetime of Type A. Even at the most optimistic estimate (upper end of the credible interval), Type B still has a shorter expected lifetime than Type A.
+
+In conclusion, there is clear evidence that Type A components are better (more reliable) than Type B components in terms of time to failure.
+
+#### Part 4
+
+From the output, we can compare the effects of component type or material grade in the model:
+
+- typeB coefficient: -0.50 with 95% CI [-0.88, -0.11]
+- grade coefficient: -0.13 with 95% CI [-0.27, 0.01]
+
+Let me analyze these factors from multiple perspectives.
+
+**1. Effect of magnitude**  
+The type effect (-0.50) appears larger than the per-unit grade effect (-0.13). However, we need to consider the full range of each variable because type is binary (A or B), so its maximum effect is -0.50, whereas grade ranges from 1 to 5, so its maximum effect (comparing highest to lowest quality) would be -0.13 × 4 = -0.52. This suggests that the total effect of grade across its full range (-0.52) is comparable to the effect of component type (-0.50).
+
+**2. Statistical evidences**  
+The typeB effect is statistically clear as its credible interval [-0.88, -0.11] excludes zero. Meanwhile, the grade effect is less certain - its credible interval [-0.27, 0.01] barely includes zero (at 0.01). This suggests stronger evidence for the type effect than for the grade effect.
+
+**3. Practical significance**
+
+- Changing from Type A to Type B reduces expected lifetime by about 39% $(exp(-0.50) ≈ 0.61)$
+- Each grade increase reduces expected lifetime by about 12% $(exp(-0.13) ≈ 0.88)$
+- Going from highest quality (grade 1) to lowest quality (grade 5) reduces expected lifetime by about 41% $(exp(-0.52) ≈ 0.59)$
+
+Based on the above three factors, I would conclude that both factors are important, but in different ways. Component type is more important for immediate decision-making because we have stronger statistical evidence of its effect. And, material grade has a comparable maximum effect when considering its full range, but with slightly less statistical certainty. If I had to prioritize one factor, I would choose component type because its effect is more robust and offers a clearer distinction between options.
